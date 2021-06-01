@@ -49,7 +49,7 @@ create table Pessoas(
 
 create table Empregados(
     BI number(9,0),
-    -- O montante que o individuo recebe ao mês
+    -- O montante que o individuo recebe ao mes
     salario number(4,0),
     -- Numero identificador do empregado (numero gerado pela biblioteca)
     ID_Empregado number(5,0),
@@ -62,7 +62,7 @@ create table Autores(
     -- Numero identificador do autor (numero gerado pela biblioteca)
     ID_Autor number(5,0),
     --TODO:
-    pseudonimo varchar(30), -- possivel lista para incluir todos os pseudónimos
+    pseudonimo varchar(300), -- possivel lista para incluir todos os pseudonimos
     -- Fernando Pessoa -> Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernardo Soares
 	primary key (BI),
 	foreign key (BI) references Pessoas(BI)
@@ -105,6 +105,8 @@ create table Reservas(
     ID_Livro number(5,0),
     -- Numero identificador do membro que fez a reserva
     BI number(9,0),
+    -- Numero para verificar se ja foi entregue a livro a biblioteca ou nao
+    entregue number(1,0),
 	primary key (ID_Reserva),
 	unique(ID_Livro, BI),
 	foreign key (ID_Livro) references Livros(ID_Livro),
@@ -146,7 +148,7 @@ create table Palestras(
     data_Evento DATE,
    hora_Evento_Inicio timestamp(1),
    -- Topico da palestra a ser realizada
-    topico varchar(30),
+    topico varchar(50),
     -- Numero identificador do autor que ira apresentar a palestra
     BI varchar(10),
     primary key (data_Evento, hora_Evento_Inicio),
@@ -250,7 +252,7 @@ start with 10
 increment by 1;
 
 delete from Livros;
-insert into Livros values (num_ID_Livros.nextval, 'Mensagem', 'António Ferro', '1934', 5);
+insert into Livros values (num_ID_Livros.nextval, 'Mensagem', 'Antonio Ferro', '1934', 5);
 insert Into Livros values (num_ID_Livros.nextval, 'Mensagem', 'Porto Editora', '2007', 20);
 insert into Livros values (num_ID_Livros.nextval, 'O Ano da Morte de Ricardo Reis', 'Porto Editora', '2021', 30); 
 insert into Livros values (num_ID_Livros.nextval, 'Os Maias', 'Porto Editora', '2006', 20);
@@ -278,17 +280,129 @@ increment by 1;
 delete from Empregados;
 insert into Empregados values (1, 300, num_ID_Empregados.nextval);
 insert into Empregados values (2, 600, num_ID_Empregados.nextval);
-insert into Empregados values (3, 450, num_ID_Empregados.nextval);
-
 select * from Empregados;
 
-delete from Eventos;
+drop sequence num_ID_Autores;
+create sequence num_ID_Autores
+start with 200
+increment by 1;
 
-insert into Eventos values('2021-5-28', '2021-5-28 10:00:00', '2021-5-28 12:00:00', 50);
-insert into Eventos values('2021-4-22', '2021-4-22 9:00', '2021-4-22 11:00', 100);
+delete from Autores;
+insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernado Soares',);
+insert into Autores values(5, num_ID_Autores.nextval, 'Eca de Queiros');
+insert into Autores values(6, num_ID_Autores.nextval, 'Jose Saramago');
+insert into Autores values(7, num_ID_Autores.nextval, 'Sophia Breyner');
+select * from Autores;
+
+delete from Eventos;
+insert into Eventos values('2000-5-28', '2000-5-28 10:00:00', '2001-5-28 12:00:00', 50);
+insert into Eventos values('2001-4-22', '2001-4-22 9:00', '2001-4-22 11:00', 100);
 insert into Eventos values('2020-12-30', '2020-12-30 15:00', '2020-12-30 16:00', 75);
 select * from Eventos;  
--- Triggers
+
+delete from Palestras;
+insert into Palestras values('2000-5-28', '2000-5-28 10:00:00', 'Romance no Ar', 7);
+insert into Palestras values('2001-4-22', '2001-4-22 9:00', 'Individuo vs Sociedade', 6);
+select * from Palestras;
+
+delete from Filmes;
+insert into Filmes values('2020-12-30', '2020-12-30 15:00', 'Os Misterios de Lisboa', 130);
+select * from Filmes;
+
+drop sequence num_ID_Usuarios;
+create sequence num_ID_Usuarios
+start with 250
+increment by 2;
+
+delete from Usuarios;
+insert into Usuarios values(3,'2021-05-22', num_ID_Usuarios.nextval);
+select * from Usuarios;
+
+drop sequence num_ID_Cartao;
+create sequence num_ID_Cartao;
+start with 321
+multiply by 2;
+
+delete from Membros;
+insert into Membros values(3, num_ID_Cartao.nextval);
+select * from Membros;
+
+drop sequence num_ID_Tema;
+create sequence num_ID_Tema
+start with 911
+increment by 1;
+
+delete from Temas;
+insert into Temas values(num_ID_Tema.nextval, 'Romance');
+insert into Temas values(num_ID_Tema.nextval, 'Tragedia');
+insert into Temas values(num_ID_Tema.nextval, 'Accao');
+select * from Temas;
+
+drop sequence num_ID_Encomendas;
+create sequence num_ID_Encomendas
+start with 300
+increment by 1;
+
+delete from Encomendas;
+insert into Encomendas values(num_ID_Encomendas.nextval, 'Lisboa');
+insert into Encomendas values(num_ID_Encomendas.nextval, 'Setubal');
+insert into Encomendas values(num_ID_Encomendas.nextval, 'Faro');
+select * from Encomendas;
+
+
+delete from Escritos_Por;
+--'Mensagem' de Porto Editora escrito por Fernando Pessoa
+insert into Escritos_Por values(10, 4);
+--'Os Maias' escrito por Eca de Queiros
+insert into Escritos_Por values(13, 5);
+select * from Escritos_Por;
+
+delete from de;
+insert into de values(11, 911);
+insert into de values(13, 912);
+select * from de;
+
+delete from Trabalha_Em;
+insert into Trabalha_Em values(1,24);
+insert into Trabalha_Em values(1,26);
+insert into Trabalha_Em values(2,30);
+select * from Trabalha_Em;
+
+delete from assistiu;
+insert into assistiu values(1, '2000-5-28', '2000-5-28 10:00:00');
+insert into assistiu values(2, '2000-5-28', '2000-5-28 10:00:00');
+insert into assistiu values(3, '2020-12-30', '2020-12-30 15:00');
+select * from assistiu;
+
+delete from Baseados_Em;
+insert into Baseados_Em values(10, '2020-12-30', '2020-12-30 15:00');
+insert into Baseados_Em values(11, '2020-12-30', '2020-12-30 15:00');
+select * from Baseados_Em;
+
+
+
+
+
+
+-- Triggers and Constraints
+
+--O autor a apresentar a palestra, automaticamente esta a assistir a palestra 
+-- Trigger para inserir na tabela assistiu
+
+--Um membro so pode ter no maximo 3 reservas ativas (ou seja, se um membro tiver 3 reservas em que
+-- ainda nao entregou o livro, esse mesmo membro nao pode efetuar mais nenhuma reserva ate que uma
+-- das que tem ficar entregue na biblioteca)
+-- Possivel constraint com check
+
+
+-- Uma encomenda dum dado livro e realizada, em pacotes de 25, quando a quantidade de copias presentes na biblioteca
+-- sao insuficientes para todos os usuarios.
+-- Trigger para inserir na tabela encomendas (Como escolher a zonaOrigem?)
+
+
+-- Um empregado nao pode desempenhar mais que duas funcoes (postos de trabalho) para aliviar o esforco
+-- necessario para trabalhar na biblioteca.
+-- Possivel constraint com check
 
 -- Queries interessantes
 
