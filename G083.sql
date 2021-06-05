@@ -17,6 +17,7 @@ drop table Baseados_Em cascade constraints;
 drop table de cascade constraints;
 drop table Trabalha_Em cascade constraints;
 drop table assistiu cascade constraints;
+drop table recebidos_por cascade constraints;
 
 
 -- Tabela dos livros em que cada um tem um dado id, o seu titulo, a editora e o
@@ -108,7 +109,7 @@ create table Reservas(
     -- Numero para verificar se ja foi entregue a livro a biblioteca ou nao
     entregue number(1,0),
 	primary key (ID_Reserva),
-	unique(ID_Livro, BI),
+	--unique(ID_Livro, BI),
 	foreign key (ID_Livro) references Livros(ID_Livro),
 	foreign key (BI) references Membros(BI)
     );
@@ -124,8 +125,6 @@ create table Postos_De_Trabalho(
 create table Encomendas(
     -- Numero identificador da encomenda (numero gerado pela biblioteca)
     ID_Encomenda number(5,0),
-    -- Zona de onde veio a encomenda de livros (Leiria, Lisboa, ...)
-    zonaOrigem varchar(25),
     primary key (ID_Encomenda)
     );
 
@@ -229,6 +228,14 @@ create table assistiu(
     foreign key (data_Evento, hora_Evento_Inicio) references Eventos(data_Evento, hora_Evento_Inicio),
     foreign key (BI) references Pessoas(BI)
     );
+    
+create table recebidos_por(
+     ID_Encomenda number(5,0),
+     BI number(9,0),
+     primary key (ID_Encomenda, BI),
+     foreign key (BI) references Empregados(BI),
+     foreign key (ID_Encomenda) references Encomendas(ID_Encomenda)
+    );
 
 -- Insercoes
 drop sequence num_BI_Pessoas;
@@ -244,6 +251,7 @@ insert into Pessoas values (num_BI_Pessoas.nextval, '1888-06-13', 'Fernando Pess
 insert into Pessoas values (num_BI_Pessoas.nextval, '1845-11-25', 'Eca de Queiros');
 insert into Pessoas values (num_BI_Pessoas.nextval, '1922-11-16', 'Jose Saramago');
 insert into Pessoas values (num_BI_Pessoas.nextval, '1919-11-06', 'Sophia de Mello Breyner');
+insert into Pessoas values (num_BI_Pessoas.nextval, '2000-11-23', 'Joao Vieira');
 select * from Pessoas;
 
 drop sequence num_ID_Livros;
@@ -288,7 +296,7 @@ start with 200
 increment by 1;
 
 delete from Autores;
-insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernado Soares',);
+insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernado Soares');
 insert into Autores values(5, num_ID_Autores.nextval, 'Eca de Queiros');
 insert into Autores values(6, num_ID_Autores.nextval, 'Jose Saramago');
 insert into Autores values(7, num_ID_Autores.nextval, 'Sophia Breyner');
@@ -316,15 +324,17 @@ increment by 2;
 
 delete from Usuarios;
 insert into Usuarios values(3,'2021-05-22', num_ID_Usuarios.nextval);
+insert into Usuarios values(8, '2021-06-23', num_ID_Usuarios.nextval);
 select * from Usuarios;
 
 drop sequence num_ID_Cartao;
-create sequence num_ID_Cartao;
+create sequence num_ID_Cartao
 start with 321
-multiply by 2;
+increment by 2;
 
 delete from Membros;
 insert into Membros values(3, num_ID_Cartao.nextval);
+insert into Membros values(8, num_ID_Cartao.nextval);
 select * from Membros;
 
 drop sequence num_ID_Tema;
@@ -336,6 +346,8 @@ delete from Temas;
 insert into Temas values(num_ID_Tema.nextval, 'Romance');
 insert into Temas values(num_ID_Tema.nextval, 'Tragedia');
 insert into Temas values(num_ID_Tema.nextval, 'Accao');
+insert into Temas values(num_ID_Tema.nextval, 'Terror');
+insert into Temas values(num_ID_Tema.nextval, 'Humor');
 select * from Temas;
 
 drop sequence num_ID_Encomendas;
@@ -344,11 +356,23 @@ start with 300
 increment by 1;
 
 delete from Encomendas;
-insert into Encomendas values(num_ID_Encomendas.nextval, 'Lisboa');
-insert into Encomendas values(num_ID_Encomendas.nextval, 'Setubal');
-insert into Encomendas values(num_ID_Encomendas.nextval, 'Faro');
+insert into Encomendas values(num_ID_Encomendas.nextval);
+insert into Encomendas values(num_ID_Encomendas.nextval);
+insert into Encomendas values(num_ID_Encomendas.nextval);
 select * from Encomendas;
 
+drop sequence num_ID_Reserva;
+create sequence num_ID_Reserva
+start with 1
+increment by 2;
+
+delete from Reservas;
+insert into Reservas values(num_ID_Reserva.nextval, '2000-10-21', '2000-11-21',11, 3, 1);
+insert into Reservas values(num_ID_Reserva.nextval, '2020-10-21', '2020-11-21',11, 3, 0);
+insert into Reservas values(num_ID_Reserva.nextval, '2020-10-24', '2020-11-22',13, 3, 0);
+insert into Reservas values(num_ID_Reserva.nextval, '2020-10-24', '2020-11-22',15, 3, 0);
+insert into Reservas values(num_ID_Reserva.nextval, '2020-10-01', '2020-11-25',15, 8, 0);
+select * from Reservas;
 
 delete from Escritos_Por;
 --'Mensagem' de Porto Editora escrito por Fernando Pessoa
@@ -358,42 +382,120 @@ insert into Escritos_Por values(13, 5);
 select * from Escritos_Por;
 
 delete from de;
-insert into de values(11, 911);
-insert into de values(13, 912);
+insert into de values(911, 11);
+insert into de values(912, 13);
 select * from de;
 
 delete from Trabalha_Em;
-insert into Trabalha_Em values(1,24);
-insert into Trabalha_Em values(1,26);
-insert into Trabalha_Em values(2,30);
+insert into Trabalha_Em values(24,1);
+insert into Trabalha_Em values(26,1);
+insert into Trabalha_Em values(30,2);
 select * from Trabalha_Em;
 
 delete from assistiu;
-insert into assistiu values(1, '2000-5-28', '2000-5-28 10:00:00');
-insert into assistiu values(2, '2000-5-28', '2000-5-28 10:00:00');
-insert into assistiu values(3, '2020-12-30', '2020-12-30 15:00');
+insert into assistiu values('2000-5-28', '2000-5-28 10:00:00',1);
+insert into assistiu values('2000-5-28', '2000-5-28 10:00:00',2);
+insert into assistiu values('2020-12-30', '2020-12-30 15:00',3);
 select * from assistiu;
 
 delete from Baseados_Em;
-insert into Baseados_Em values(10, '2020-12-30', '2020-12-30 15:00');
-insert into Baseados_Em values(11, '2020-12-30', '2020-12-30 15:00');
+insert into Baseados_Em values('2020-12-30', '2020-12-30 15:00',10);
+insert into Baseados_Em values('2020-12-30', '2020-12-30 15:00',11);
 select * from Baseados_Em;
 
+-- Funções 
+
+-- Função que retorna numero de reservas ativas de uma pessoa dado o seu BI
+ create or replace function reservas_ativas(BI_pessoa IN Number)
+        return number
+        IS num_livros number(1,0);
+        BEGIN
+            SELECT count(distinct ID_Reserva)
+            INTO num_livros
+            FROM Reservas
+            WHERE entregue = 0 and BI = BI_pessoa;
+            RETURN (num_livros);
+        END;
+    /
+    
+-- Função que retorna o numero de postos de trabalho de um empregado dado o seu BI
+create or replace function trabalhos_de_funcionario(BI_funcionario IN Number)
+        return number
+        IS num_trabalhos number(3,0);
+        BEGIN
+            SELECT count(distinct ID_Trabalho)
+            into num_trabalhos
+            FROM Trabalha_em
+            WHERE Trabalha_em.BI = BI_funcionario;
+            RETURN (num_trabalhos);
+        END;
+/
 
 
-
-
+create or replace function capacidade_do_evento(date_event IN DATE, hour_event IN TIMESTAMP)
+        return number
+        IS capacity_event number(3,0);
+        BEGIN
+            SELECT capacidade
+            into capacity_event
+            FROM Eventos
+            WHERE Eventos.Data_Evento = date_event and Eventos.Hora_Evento_Inicio = hour_event;
+            RETURN capacity_event;
+        END;
+        /
+        
+create or replace function lotacao_evento(date_event IN DATE, hour_event IN TIMESTAMP)
+        return number
+        IS capacity_event number(3,0);
+        BEGIN
+            SELECT count(distinct BI)
+            into capacity_event
+            FROM assistiu
+            WHERE assistiu.data_Evento = date_event and assistiu.Hora_Evento_Inicio = hour_event;
+            RETURN capacity_event;
+        END;
+        /
 
 -- Triggers and Constraints
 
 --O autor a apresentar a palestra, automaticamente esta a assistir a palestra 
 -- Trigger para inserir na tabela assistiu
+--drop trigger autor_assiste_palestra;
+create or replace trigger autor_assiste_palestra after insert on Palestras
+    for each row
+    begin
+        insert into assistiu values (:NEW.data_Evento, :NEW.hora_Evento_Inicio, :NEW.BI);
+    end;
+/
+
+-- Um usuario so pode entrar num evento se a capacidade não exceder o seu limite.
 
 --Um membro so pode ter no maximo 3 reservas ativas (ou seja, se um membro tiver 3 reservas em que
 -- ainda nao entregou o livro, esse mesmo membro nao pode efetuar mais nenhuma reserva ate que uma
 -- das que tem ficar entregue na biblioteca)
 -- Possivel constraint com check
 
+--drop trigger only_3_active_reserves;
+create or replace trigger only_3_active_reserves before insert on Reservas
+    for each row
+    begin   
+        if (reservas_ativas(:NEW.BI) > 2)
+        then RAISE_APPLICATION_ERROR(-20000, 'Erro');
+    end if;
+    end;
+/
+
+select BI, reservas_ativas(BI)
+from Reservas
+group by BI
+order by BI;
+
+insert into Reservas values(num_ID_Reserva.nextval, '2020-10-01', '2020-11-25',15, 3, 0);
+
+select BI, reservas_ativas(BI)
+from Reservas
+group by BI
+order by BI;
 
 -- Uma encomenda dum dado livro e realizada, em pacotes de 25, quando a quantidade de copias presentes na biblioteca
 -- sao insuficientes para todos os usuarios.
@@ -403,10 +505,64 @@ select * from Baseados_Em;
 -- Um empregado nao pode desempenhar mais que duas funcoes (postos de trabalho) para aliviar o esforco
 -- necessario para trabalhar na biblioteca.
 -- Possivel constraint com check
+create or replace trigger only_2_active_workstations before insert on Trabalha_Em
+    for each row
+    begin  
+        if (trabalhos_de_funcionario(:NEW.BI) > 1)
+        then RAISE_APPLICATION_ERROR(-20001, 'Nao pode fazer mais que dois postos de trabalho');
+        end if;
+    end;
+/
+
+-- Fazer uma encomenda
+--TODO: SQL Error
+--drop trigger fazer_encomenda;
+create or replace trigger fazer_encomenda
+    after insert on Usuarios
+    for each row
+    declare numero_livros integer;
+    numero_usuarios integer;
+    encomenda integer;
+    begin
+        select count(*) into numero_usuarios from Usuarios;
+        select sum(Num_Copias) into numero_livros from Livros;
+        if (numero_livros > numero_usuarios) then 
+            encomenda := num_ID_Encomendas.nextval;
+            insert into Encomendas values (encomenda);
+            insert into Encomendados values(encomenda, ID_Livro, 5);
+            update Livros set num_copias = num_copias + 5 where Livros.ID_Livro = ID_Livro;
+        end if;
+    end;
+/
+
+create or replace trigger over_capacity 
+    before insert on assistiu
+    for each row
+    begin  
+        if (lotacao_evento(:NEW.Data_Evento, :NEW.Hora_Evento_Inicio) = capacidade_do_evento(:NEW.Data_Evento, :NEW.Hora_Evento_Inicio))
+        then RAISE_APPLICATION_ERROR(-20002, 'Capacidade atingida no evento');
+        end if;
+    end;
+/
 
 -- Queries interessantes
 
---
+-- Procurar as datas e horas de palestras dadas por um autor que escreveu um dado livro.
+select *
+from Escritos_Por inner join Palestras using (BI);
+
+
+
+-- Nomes e BI’s de empregados que tenham recebido encomendas de livros escritos por um dado autor.
+
+-- Nomes das pessoas que foram assistir a um filme baseado num livro de um dado tema.
+
+-- Título dos livros reservados por um dado membro.
+
+-- Tópicos apresentados por um dado autor.
+
+-- 
 
         
-    
+--alter table assistiu add constraint chk_over_capacity check ((lotacao_evento(data_Evento, hora_Evento_Inicio)) <= (capacidade_do_evento(data_Evento, hora_Evento_Inicio)));
+
