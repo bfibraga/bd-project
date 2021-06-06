@@ -149,7 +149,7 @@ create table Palestras(
    -- Topico da palestra a ser realizada
     topico varchar(50),
     -- Numero identificador do autor que ira apresentar a palestra
-    BI varchar(10),
+    BI number(9,0),
     primary key (data_Evento, hora_Evento_Inicio),
     foreign key (data_Evento, hora_Evento_Inicio) references Eventos(data_Evento, hora_Evento_Inicio)
     );
@@ -176,7 +176,7 @@ create table Encomendados(
     foreign key (ID_Livro) references Livros(ID_Livro),
     foreign key (ID_Encomenda) references Encomendas(ID_Encomenda)
     );
-  
+	
 create table Escritos_Por(
     -- Numero identificador do livro que foi escrito
     ID_Livro number(5,0),
@@ -374,6 +374,11 @@ insert into Reservas values(num_ID_Reserva.nextval, '2020-10-24', '2020-11-22',1
 insert into Reservas values(num_ID_Reserva.nextval, '2020-10-01', '2020-11-25',15, 8, 0);
 select * from Reservas;
 
+delete from Encomendados;
+insert into Encomendados values(300, 11, 10);
+insert into Encomendados values(301, 13, 25);
+select * from Encomendados;
+
 delete from Escritos_Por;
 --'Mensagem' de Porto Editora escrito por Fernando Pessoa
 insert into Escritos_Por values(10, 4);
@@ -547,19 +552,47 @@ create or replace trigger over_capacity
 
 -- Queries interessantes
 
--- Procurar as datas e horas de palestras dadas por um autor que escreveu um dado livro.
-select *
-from Escritos_Por inner join Palestras using (BI);
+-- Procurar as datas e horas de palestras dadas por autores que escreveu um dado livro.
+select Data_Evento, Hora_Evento_Inicio
+from Livros inner join Escritos_Por using (ID_Livro)
+			inner join Palestras using (BI);
+where Titulo = 'A Mensagem';
 
 
 
 -- Nomes e BI’s de empregados que tenham recebido encomendas de livros escritos por um dado autor.
+select nome, BI
+from Empregados inner join Pessoas using (BI)
+			inner join recebidos_por using (BI)
+			inner join Encomendas using (ID_Encomenda)
+			inner join Encomendados using (ID_Encomenda)
+			inner join Livros using (ID_Livro)
+			inner join Escritos_Por using (ID_Livro)
+where ID_Autor = 11
+
 
 -- Nomes das pessoas que foram assistir a um filme baseado num livro de um dado tema.
 
--- Título dos livros reservados por um dado membro.
+select nome
+from Pessoas inner join assistiu using (BI)
+		inner join Eventos using (data_Evento, hora_Evento_Inicio)
+		inner join Filmes using (data_Evento, hora_Evento_Inicio)
+		inner join baseados_Em using (data_Evento, hora_Evento_Inicio)
+		inner join Livros using (ID_Livro)
+		inner join de using (ID_Tema)
+where nome_Tema = 'Romance'
+
+-- Título dos livros reservados pelo menos uma vez por um dado membro.
+
+select Titulo
+from Reservas inner join Livros using (ID_Livro)
+where BI = 3;
 
 -- Tópicos apresentados por um dado autor.
+
+select topico
+from Palestras inner join Autores using (BI)
+where BI = 6;
 
 -- 
 
