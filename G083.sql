@@ -65,9 +65,9 @@ create table Autores(
     BI number(9,0),
     -- Numero identificador do autor (numero gerado pela biblioteca)
     ID_Autor number(5,0),
-    --TODO:
-    pseudonimo varchar(300), -- possivel lista para incluir todos os pseudonimos
-    -- Fernando Pessoa -> Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernardo Soares
+    -- Pseudonimo mais conhecido do autor
+    pseudonimo varchar(20), 
+    
 	primary key (BI),
 	foreign key (BI) references Pessoas(BI)
     );
@@ -319,7 +319,7 @@ start with 200
 increment by 1;
 
 delete from Autores;
-insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernado Soares');
+insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis');
 insert into Autores values(5, num_ID_Autores.nextval, 'Eca de Queiros');
 insert into Autores values(6, num_ID_Autores.nextval, 'Jose Saramago');
 insert into Autores values(7, num_ID_Autores.nextval, 'Sophia Breyner');
@@ -504,12 +504,12 @@ create or replace function lotacao_evento(date_event IN DATE, hour_event IN TIME
 -- Triggers and Constraints
 
 alter table Livros add constraint CHK_LIVROS check(Num_Pags >= 0 and Num_Copias >= 0);
-alter table Empregados add constraint CHK_EMPR check(salario >= 0);
+alter table Empregados add constraint CHK_EMPR check(salario > 0);
 alter table Empregados add constraint UNIQUE_EMPR unique (ID_Empregado);
 alter table Usuarios add constraint UNIQUE_USER unique (ID_Usuario);
 alter table Membros add constraint UNIQUE_MEMBER unique (num_cartao);
-alter table Eventos add constraint CHK_EVENT check(capacidade >= 0);
-alter table Filmes add constraint CHK_FILM check(duracao >= 0);
+alter table Eventos add constraint CHK_EVENT check(capacidade > 0);
+alter table Filmes add constraint CHK_FILM check(duracao > 0);
 
 
 --O autor a apresentar a palestra, automaticamente esta a assistir a palestra 
