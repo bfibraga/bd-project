@@ -65,9 +65,9 @@ create table Autores(
     BI number(9,0),
     -- Numero identificador do autor (numero gerado pela biblioteca)
     ID_Autor number(5,0),
-    -- Pseudonimo mais conhecido do autor
-    pseudonimo varchar(20), 
-    
+    --TODO:
+    pseudonimo varchar(300), -- possivel lista para incluir todos os pseudonimos
+    -- Fernando Pessoa -> Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernardo Soares
 	primary key (BI),
 	foreign key (BI) references Pessoas(BI)
     );
@@ -319,7 +319,7 @@ start with 200
 increment by 1;
 
 delete from Autores;
-insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis');
+insert into Autores values(4, num_ID_Autores.nextval, 'Ricardo Reis, Alberto Caeiro, Alvaro de Campos, Bernado Soares');
 insert into Autores values(5, num_ID_Autores.nextval, 'Eca de Queiros');
 insert into Autores values(6, num_ID_Autores.nextval, 'Jose Saramago');
 insert into Autores values(7, num_ID_Autores.nextval, 'Sophia Breyner');
@@ -504,12 +504,12 @@ create or replace function lotacao_evento(date_event IN DATE, hour_event IN TIME
 -- Triggers and Constraints
 
 alter table Livros add constraint CHK_LIVROS check(Num_Pags >= 0 and Num_Copias >= 0);
-alter table Empregados add constraint CHK_EMPR check(salario > 0);
+alter table Empregados add constraint CHK_EMPR check(salario >= 0);
 alter table Empregados add constraint UNIQUE_EMPR unique (ID_Empregado);
 alter table Usuarios add constraint UNIQUE_USER unique (ID_Usuario);
 alter table Membros add constraint UNIQUE_MEMBER unique (num_cartao);
-alter table Eventos add constraint CHK_EVENT check(capacidade > 0);
-alter table Filmes add constraint CHK_FILM check(duracao > 0);
+alter table Eventos add constraint CHK_EVENT check(capacidade >= 0);
+alter table Filmes add constraint CHK_FILM check(duracao >= 0);
 
 
 --O autor a apresentar a palestra, automaticamente esta a assistir a palestra 
@@ -530,7 +530,8 @@ create or replace trigger autor_assiste_palestra after insert on Palestras
 -- Possivel constraint com check
 
 --drop trigger only_3_active_reserves;
-create or replace trigger only_3_active_reserves before insert on Reservas
+create or replace trigger only_3_active_reserves 
+    before insert on Reservas
     for each row
     begin   
         if (reservas_ativas(:NEW.BI) > 2)
@@ -587,6 +588,52 @@ create or replace trigger over_capacity
     end;
 /
 
+select data_Evento as dataP, hora_Evento_Inicio as horaP
+        from Palestras
+        where (data_Evento, hora_Evento_Inicio) in (select data_Evento, hora_Evento_Inicio from Filmes);
+
+with eventosDup as (select data_Evento as dataP, hora_Evento_Inicio as horaP
+        from Palestras
+        where (data_Evento, hora_Evento_Inicio) in (select data_Evento, hora_Evento_Inicio from Filmes))
+        select count(distinct dataP)
+        from eventosDup;
+
+create or replace trigger check_film
+    before insert on filmes
+    for each row
+    declare nmr integer;
+    begin 
+        with eventosDup as (select data_Evento as dataP, hora_Evento_Inicio as horaP
+        from Palestras
+        where data_Evento = :NEW.data_Evento and hora_Evento_Inicio = :NEW.hora_Evento_Inicio)
+        select count(dataP) into nmr
+        from eventosDup;
+        if (nmr > 0) 
+        then RAISE_APPLICATION_ERROR(-20003, 'Filme nao pode ser simultaneamente uma Palestra');
+        end if;
+    end;
+/
+
+create or replace trigger check_palestra
+    before insert on palestras
+    for each row
+    declare DataAtual date;
+    HoraAtual timestamp;
+    begin
+        with eventosDup as (select data_Evento as dataP, hora_Evento_Inicio as horaP
+        from Filmes
+        where data_Evento = :NEW.data_Evento and hora_Evento_Inicio = :NEW.hora_Evento_Inicio)
+        select count(dataP) into nmr
+        from eventosDup;
+        if (nmr > 0) 
+        then RAISE_APPLICATION_ERROR(-20003, 'Palestra nao pode ser simultaneamente uma Filme');
+        end if;
+    end;
+/
+
+insert into Filmes values('2000-5-28','2000-5-28 10:00:00', 'Apresentacao "Romance no Ar"', 55);
+
+
 -- Queries interessantes
 
 -- Procurar as datas e horas de palestras dadas por um autor que escreveu o livro 'Mensagem'.
@@ -627,5 +674,4 @@ where BI = 6;
 -- Encomendas que ainda não entraram na biblioteca (encomendas que ainda não foram recebidas)
 
         
---alter table assistiu add constraint chk_over_capacity check ((lotacao_evento(data_Evento, hora_Evento_Inicio)) <= (capacidade_do_evento(data_Evento, hora_Evento_Inicio)));
 
